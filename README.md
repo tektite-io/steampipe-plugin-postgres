@@ -11,23 +11,23 @@ See below for an example that mixes data from a static DB (contact information f
 Steampipe currently has no such functionality, with an alternative being exporting a copy of the Postgres DB as a CSV and then using the [CSV plugin](https://hub.steampipe.io/plugins/turbot/csv). However, the CSV file may be out of date, and you're responsible for keeping it updated. This plugin, instead, will always have up-to-date results, since it queries the backing Postgres DB whenever a query comes in to Steampipe. Another alternative is to manually install and configure [the `postgres-fdw` module on Steampipe](https://www.postgresql.org/docs/current/postgres-fdw.html), which requires connecting to the DB as root, is not documented and doesn't play too well with Dockerized deployments.
 
 - **[Get started →](https://hub.steampipe.io/plugins/jreyesr/postgres)**
-- Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/jreyesr/postgres/tables)
+- Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/tektite-io/postgres/tables)
 - Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
-- Get involved: [Issues](https://github.com/jreyesr/steampipe-plugin-postgres/issues)
+- Get involved: [Issues](https://github.com/tektite-io/steampipe-plugin-postgres/issues)
 
 ## Quick start
 
 Download and install the latest Postgres plugin:
 
 ```shell
-steampipe plugin install jreyesr/postgres
+steampipe plugin install tektite-io/postgres
 ```
 
 Installing the latest Postgres plugin will create a config file (`~/.steampipe/config/postgres.spc`) with a single connection named `postgres`:
 
 ```hcl
 connection "postgres" {
-  plugin = "jreyesr/postgres"
+  plugin = "tektite-io/postgres"
 
   # A connection string (https://pkg.go.dev/github.com/jackc/pgx/v5#hdr-Establishing_a_Connection), in the form that is 
   # expected by the pgx package. Required. 
@@ -84,7 +84,7 @@ Prerequisites:
 Clone:
 
 ```sh
-git clone https://github.com/jreyesr/steampipe-plugin-postgres.git
+git clone https://github.com/tektite-io/steampipe-plugin-postgres.git
 cd steampipe-plugin-postgres
 ```
 
@@ -120,4 +120,4 @@ Please see the [contribution guidelines](https://github.com/turbot/steampipe/blo
 `help wanted` issues:
 
 - [Steampipe](https://github.com/turbot/steampipe/labels/help%20wanted)
-- [Postgres Plugin](https://github.com/jreyesr/steampipe-plugin-postgres/labels/help%20wanted)
+- [Postgres Plugin](https://github.com/tektite-io/steampipe-plugin-postgres/labels/help%20wanted)
