@@ -4,24 +4,23 @@ import (
 	"context"
 	"fmt"
 
-	"ariga.io/atlas/sql/schema"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 func tablePostgres(ctx context.Context, connection *plugin.Connection) (*plugin.Table, error) {
-	tableAtlas := ctx.Value(keyTable).(*schema.Table)
-	name := tableAtlas.Name
+	view := ctx.Value(keyTable).(View)
+	name := view.Name
 
 	return &plugin.Table{
-		Name:        name,
-		Description: FindCommentOnAttrs(tableAtlas.Attrs),
+		Name:        name[1],
+		Description: "", //eAtlas.Attrs),
 		List: &plugin.ListConfig{
 			Hydrate:    ListTableRecords,
-			KeyColumns: makeKeyColumns(ctx, tableAtlas),
+			KeyColumns: makeKeyColumns(ctx, view),
 		},
-		Columns: makeColumns(ctx, tableAtlas),
+		Columns: makeColumns(ctx, view),
 	}, nil
 }
 
@@ -36,37 +35,37 @@ func getMapKey(ctx context.Context, d *transform.TransformData) (interface{}, er
 	return asMap[key], nil
 }
 
-func makeColumns(ctx context.Context, tableAtlas *schema.Table) []*plugin.Column {
-	columns := make([]*plugin.Column, 0, len(tableAtlas.Columns))
+func makeColumns(ctx context.Context, view View) []*plugin.Column {
+	columns := make([]*plugin.Column, 0, len(view.Columns))
 
-	for _, col := range tableAtlas.Columns {
+	for _, col := range view.Columns {
 		postgresType := PostgresColTypeToSteampipeColType(ctx, col)
 		if postgresType == proto.ColumnType_UNKNOWN {
-			plugin.Logger(ctx).Warn("postgres.makeColumns", "msg", "unknown type, skipping column!", "column", col.Name, "type", col.Type.Raw)
+			plugin.Logger(ctx).Warn("postgres.makeColumns", "msg", "unknown type, skipping column!", "column", col.name, "type", col.colScanType)
 			continue
 		}
 		columns = append(columns, &plugin.Column{
-			Name:        col.Name,
+			Name:        col.name,
 			Type:        postgresType,
-			Description: FindCommentOnAttrs(col.Attrs),
-			Transform:   transform.FromP(getMapKey, col.Name),
+			Description: "", //TODO
+			Transform:   transform.FromP(getMapKey, col.name),
 		})
 	}
 
 	return columns
 }
 
-func makeKeyColumns(ctx context.Context, tableAtlas *schema.Table) plugin.KeyColumnSlice {
-	var all = make([]*plugin.KeyColumn, 0, len(tableAtlas.Columns))
+func makeKeyColumns(ctx context.Context, view View) plugin.KeyColumnSlice {
+	var all = make([]*plugin.KeyColumn, 0, len(view.Columns))
 
-	for _, col := range tableAtlas.Columns {
+	for _, col := range view.Columns {
 		postgresType := PostgresColTypeToSteampipeColType(ctx, col)
 		if postgresType == proto.ColumnType_UNKNOWN {
-			plugin.Logger(ctx).Warn("postgres.makeColumns", "msg", "unknown type, skipping column!", "column", col.Name, "type", col.Type.Raw)
+			plugin.Logger(ctx).Warn("postgres.makeColumns", "msg", "unknown type, skipping column!", "column", col.name, "type", col.colScanType)
 			continue
 		}
 		all = append(all, &plugin.KeyColumn{
-			Name:      col.Name,
+			Name:      col.name,
 			Operators: plugin.GetValidOperators(), // Everything is valid! Just reuse Steampipe's own "list of all operators that can be handled"
 			Require:   plugin.Optional,
 		})

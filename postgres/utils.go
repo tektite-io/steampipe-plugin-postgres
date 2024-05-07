@@ -7,37 +7,67 @@ import (
 	"strings"
 	"time"
 
-	"ariga.io/atlas/sql/postgres"
-	"ariga.io/atlas/sql/schema"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
+type Column struct {
+	name        string
+	colScanType string
+	colDbType   string
+}
+
+type View struct {
+	Name    [2]string
+	Columns []Column
+}
+
 func connect(connectionString string) (*sql.DB, error) {
 	return sql.Open("pgx", connectionString)
 }
 
-/*
-GetAtlasSchemaForDBSchema gets the Atlas schema (as in, the metadata) for a Postgres schema (as in, the hierarchy below a database and above a table, such as `public`).
-Must receive a connection string in the format expected by pgx (https://pkg.go.dev/github.com/jackc/pgx/v5#hdr-Establishing_a_Connection)
-*/
-func GetAtlasSchemaForDBSchema(ctx context.Context, connectionString, schema string) (*schema.Schema, error) {
+func GetViews(db *sql.DB) ([]View, error) {
+	//conn, err := connect(connectionString)
+	//if err != nil {
+	//	return nil, fmt.Errorf("can't connect to DB: %w", err)
+	//}
+	var views []View
+	var cols []Column
+
+	viewsList, err := Views(db)
+
+	for key, val := range viewsList {
+		//fmt.Printf("Key: %s, Value: %T\n", key, val)
+
+		for _, v := range val {
+			col := Column{v.Name(), v.ScanType().Name(), v.DatabaseTypeName()}
+			//fmt.Printf("%s\n", PostgresColTypeToSteampipeColType(nil, col).String())
+			cols = append(cols, col)
+			//fmt.Printf("k: %d, Name: %s, Type: %s, DataBase Type Name: %s\n", k, v.Name(), v.ScanType(), v.DatabaseTypeName())
+		}
+		view := View{key, cols}
+		views = append(views, view)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("can't get views: %w", err)
+	}
+	return views, nil
+}
+
+func GetViewsForDBSchema(ctx context.Context, connectionString, schema string) ([]View, error) {
 	conn, err := connect(connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("can't connect to DB: %w", err)
 	}
 
-	driver, err := postgres.Open(conn)
-	if err != nil {
-		return nil, fmt.Errorf("can't open Postgres driver: %w", err)
-	}
-	sch, err := driver.InspectSchema(ctx, schema, nil)
+	views, err := GetViews(conn)
 	if err != nil {
 		return nil, fmt.Errorf("error inspecting schema: %w", err)
 	}
 
-	return sch, nil
+	return views, nil
 }
 
 /*
@@ -45,51 +75,46 @@ FindCommentOnAttrs tries to locate an Attr among the passed array that correspon
 Otherwise, returns an empty string.
 This function can be used to identify the comment that is attached to a schema, table or column.
 */
-func FindCommentOnAttrs(attrs []schema.Attr) string {
-	var comment string
-	for _, attr := range attrs {
-		if _attr, ok := attr.(*schema.Comment); ok {
-			comment = _attr.Text
-		}
-	}
-	return comment
-}
+//func FindCommentOnAttrs(attrs []schema.Attr) string {
+//	var comment string
+//	for _, attr := range attrs {
+//		if _attr, ok := attr.(*schema.Comment); ok {
+//			comment = _attr.Text
+//		}
+//	}
+//	return comment
+//}
 
 /*
 PostgresColTypeToSteampipeColType converts an Atlas column type to a Steampipe column.
 Atlas column types correspond almost one-to-one to actual SQL types, either standard SQL or Postgres extensions.
 For example, DECIMAL, FLOAT and CURRENCY become DOUBLEs on Steampipe
 */
-func PostgresColTypeToSteampipeColType(ctx context.Context, col *schema.Column) proto.ColumnType {
+func PostgresColTypeToSteampipeColType(ctx context.Context, col Column) proto.ColumnType {
 	var x proto.ColumnType
-
-	switch t := col.Type.Type.(type) {
-	case *schema.BinaryType, *postgres.BitType, *schema.EnumType, *schema.StringType, *schema.UUIDType:
+	fmt.Printf("colDbType: %s\n", col.colDbType)
+	switch col.colDbType {
+	case "TEXT", "BYTEA":
 		x = proto.ColumnType_STRING
-	case *schema.BoolType:
+	case "BOOL", "BOOLEAN":
 		x = proto.ColumnType_BOOL
-	case *schema.DecimalType, *schema.FloatType, *postgres.CurrencyType:
+	case "DOUBLE PRECISION", "FLOAT8", "FLOAT4", "NUMERIC", "DECIMAL", "CURRENCY":
 		x = proto.ColumnType_DOUBLE
-	case *schema.IntegerType, *postgres.SerialType:
+	case "INT4", "INTEGER":
 		x = proto.ColumnType_INT
-	case *schema.JSONType:
+	case "JSON", "JSONB":
 		x = proto.ColumnType_JSON
-	case *schema.TimeType, *postgres.IntervalType:
+	case "TIMESTAMP":
 		x = proto.ColumnType_TIMESTAMP
-	case *postgres.NetworkType:
-		if t.T == "inet" {
-			x = proto.ColumnType_INET
-		} else if t.T == "cidr" {
-			x = proto.ColumnType_CIDR
-		} else {
-			x = proto.ColumnType_UNKNOWN
-		}
+	case "INET":
+		x = proto.ColumnType_INET
+	case "CIDR":
+		x = proto.ColumnType_CIDR
 	default:
 		// As of writing this, these are the types that fall here, AKA those that we don't know how to translate
 		// *schema.SpatialType, *schema.UnsupportedType, *postgres.TextSearchType, *postgres.ArrayType, *postgres.OIDType, *postgres.RangeType, *postgres.UserDefinedType, *postgres.XMLType
 		x = proto.ColumnType_UNKNOWN
 	}
-
 	return x
 }
 

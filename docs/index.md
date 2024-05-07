@@ -1,7 +1,7 @@
 ---
-organization: jreyesr
+organization: tektite-io
 category: ["software development"]
-icon_url: "/images/plugins/jreyesr/postgres.svg"
+icon_url: "/images/plugins/tektite-io/postgres.svg"
 brand_color: "#336791"
 display_name: Postgres
 name: postgres
@@ -46,7 +46,7 @@ from
 Download and install the latest Postgres plugin:
 
 ```bash
-steampipe plugin install jreyesr/postgres
+steampipe plugin install tektite-io/postgres
 ```
 
 ### Credentials
@@ -63,7 +63,7 @@ Installing the latest Postgres plugin will create a config file (`~/.steampipe/c
 
 ```hcl
 connection "postgres" {
-  plugin = "jreyesr/postgres"
+  plugin = "tektite-io/postgres"
 
   # A connection string (https://pkg.go.dev/github.com/jackc/pgx/v5#hdr-Establishing_a_Connection), in the form that is 
   # expected by the pgx package. Required. 
@@ -98,5 +98,4 @@ If the tables that you wish to expose don't live in the `public` schema on the r
 
 ## Get involved
 
-- Open source: https://github.com/jreyesr/steampipe-plugin-postgres
 - Community: [Join #steampipe on Slack →](https://turbot.com/community/join)

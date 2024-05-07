@@ -1,5 +1,5 @@
 connection "postgres" {
-  plugin = "jreyesr/postgres"
+  plugin = "tektite-io/postgres"
 
   # A connection string (https://pkg.go.dev/github.com/jackc/pgx/v5#hdr-Establishing_a_Connection), in the form that is 
   # expected by the pgx package. Required. 

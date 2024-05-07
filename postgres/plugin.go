@@ -11,7 +11,7 @@ import (
 
 func Plugin(ctx context.Context) *plugin.Plugin {
 	p := &plugin.Plugin{
-		Name: "steampipe-plugin-postgres",
+		Name:             "steampipe-plugin-postgres",
 		DefaultTransform: transform.FromGo().NullIfZero(),
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
@@ -39,7 +39,7 @@ func PluginTables(ctx context.Context, d *plugin.TableMapData) (map[string]*plug
 	}
 	schemaName := config.GetSchema()
 
-	schema, err := GetAtlasSchemaForDBSchema(ctx, connectionString, schemaName)
+	views, err := GetViewsForDBSchema(ctx, connectionString, schemaName)
 	if err != nil {
 		plugin.Logger(ctx).Error("postgres.PluginTables", "get_schema_error", err)
 		return nil, err
@@ -47,31 +47,31 @@ func PluginTables(ctx context.Context, d *plugin.TableMapData) (map[string]*plug
 
 	temp_table_names := []string{} // this is to keep track of the tables that we've already added
 
-	plugin.Logger(ctx).Debug("postgres.PluginTables", "tables", schema.Tables, "patterns", config.GetTablesToExpose())
+	plugin.Logger(ctx).Debug("postgres.PluginTables", "views", views, "patterns", config.GetTablesToExpose())
 	for _, pattern := range config.GetTablesToExpose() {
-		for _, tableAtlas := range schema.Tables {
+		for _, view := range views {
 
-			if helpers.StringSliceContains(temp_table_names, tableAtlas.Name) {
+			if helpers.StringSliceContains(temp_table_names, view.Name[1]) {
 				continue // we've already handled it before
-			} else if ok, _ := path.Match(pattern, tableAtlas.Name); !ok {
-				plugin.Logger(ctx).Debug("postgres.PluginTables.noMatch", "pattern", pattern, "table", tableAtlas.Name)
+			} else if ok, _ := path.Match(pattern, view.Name[1]); !ok {
+				plugin.Logger(ctx).Debug("postgres.PluginTables.noMatch", "pattern", pattern, "view", view.Name)
 				continue // pattern didn't match, don't do what follows
 			}
 
 			// here we're sure that pattern matched and it's the first time, so process this table
-			temp_table_names = append(temp_table_names, tableAtlas.Name)
+			temp_table_names = append(temp_table_names, view.Name[1])
 
-			// Pass the actual *schema.Table as a context key, as the CSV plugin does
-			tableCtx := context.WithValue(ctx, keyTable, tableAtlas)
+			// Pass the actual View as a context key, as the CSV plugin does
+			tableCtx := context.WithValue(ctx, keyTable, view)
 
 			tableSteampipe, err := tablePostgres(tableCtx, d.Connection)
 			if err != nil {
-				plugin.Logger(ctx).Error("postgres.PluginTables", "create_table_error", err, "tableName", tableAtlas.Name)
+				plugin.Logger(ctx).Error("postgres.PluginTables", "create_table_error", err, "tableName", view.Name)
 				return nil, err
 			}
 
 			plugin.Logger(ctx).Debug("postgres.PluginTables.makeTables", "table", tableSteampipe)
-			tables[tableAtlas.Name] = tableSteampipe
+			tables[view.Name[1]] = tableSteampipe
 		}
 	}
 

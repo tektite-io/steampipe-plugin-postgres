@@ -5,6 +5,8 @@ go 1.21
 require (
 	ariga.io/atlas v0.14.1-0.20230906140243-509a6c18d65f
 	github.com/jackc/pgx/v5 v5.4.3
+	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega v1.20.1
 	github.com/turbot/go-kit v0.8.0-rc.0
 )
 
@@ -62,6 +64,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pegasus-kv/thrift v0.13.0 // indirect
@@ -104,8 +107,10 @@ require (
 	google.golang.org/grpc v1.58.2 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.25.3 // indirect
 )
 
