@@ -10,7 +10,6 @@ See below for an example that mixes data from a static DB (contact information f
 
 Steampipe currently has no such functionality, with an alternative being exporting a copy of the Postgres DB as a CSV and then using the [CSV plugin](https://hub.steampipe.io/plugins/turbot/csv). However, the CSV file may be out of date, and you're responsible for keeping it updated. This plugin, instead, will always have up-to-date results, since it queries the backing Postgres DB whenever a query comes in to Steampipe. Another alternative is to manually install and configure [the `postgres-fdw` module on Steampipe](https://www.postgresql.org/docs/current/postgres-fdw.html), which requires connecting to the DB as root, is not documented and doesn't play too well with Dockerized deployments.
 
-- **[Get started →](https://hub.steampipe.io/plugins/jreyesr/postgres)**
 - Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/tektite-io/postgres/tables)
 - Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/tektite-io/steampipe-plugin-postgres/issues)
