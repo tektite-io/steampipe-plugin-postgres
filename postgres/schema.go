@@ -105,12 +105,12 @@ func TableNames(db *sql.DB) ([][2]string, error) {
 // ViewNames returns a list of all view names.
 //
 // Each name consists of a [2]string tuple: schema name, view name.
-func ViewNames(db *sql.DB) ([][2]string, error) {
+func ViewNames(db *sql.DB, schema string) ([][2]string, error) {
 	d, err := getDialect(db)
 	if err != nil {
 		return nil, err
 	}
-	return d.ViewNames(db)
+	return d.ViewNamesSchema(db, schema)
 }
 
 // ColumnTypes returns the column type metadata for the given object (table or view) in the given schema.

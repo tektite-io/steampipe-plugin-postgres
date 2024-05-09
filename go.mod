@@ -3,11 +3,11 @@ module github.com/jreyesr/steampipe-plugin-postgres
 go 1.21
 
 require (
-	ariga.io/atlas v0.14.1-0.20230906140243-509a6c18d65f
-	github.com/jackc/pgx/v5 v5.4.3
+	github.com/jackc/pgx/v5 v5.5.5
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.1
 	github.com/turbot/go-kit v0.8.0-rc.0
+//github.com/jackc/pgx/v5/pgxpool v5
 )
 
 require (
@@ -55,6 +55,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -96,7 +97,7 @@ require (
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.126.0 // indirect
@@ -116,7 +117,6 @@ require (
 
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect
-	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/hashicorp/hcl/v2 v2.18.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -124,6 +124,6 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	github.com/zclconf/go-cty v1.14.0 // indirect
-	golang.org/x/crypto v0.11.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 )

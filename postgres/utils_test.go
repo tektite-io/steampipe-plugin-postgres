@@ -20,9 +20,8 @@ func TestUtils(t *testing.T) {
 			dbname   = "postgres"
 		)
 
-		// Construct the connection string
 		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
+		fmt.Println(connStr)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
 			log.Fatalf("sql.Open error %v", err)
@@ -59,7 +58,7 @@ func TestUtils(t *testing.T) {
 
 	db, done := setup()
 	defer done()
-	sc, err := GetViews(db)
+	sc, err := GetViews(db, "public")
 
 	//coverage := Coverage {
 	//    neoCoverage: []NeoCoverage {

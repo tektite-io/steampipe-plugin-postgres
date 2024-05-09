@@ -27,7 +27,7 @@ func connect(connectionString string) (*sql.DB, error) {
 	return sql.Open("pgx", connectionString)
 }
 
-func GetViews(db *sql.DB) ([]View, error) {
+func GetViews(db *sql.DB, schema string) ([]View, error) {
 	//conn, err := connect(connectionString)
 	//if err != nil {
 	//	return nil, fmt.Errorf("can't connect to DB: %w", err)
@@ -39,7 +39,9 @@ func GetViews(db *sql.DB) ([]View, error) {
 
 	for key, val := range viewsList {
 		//fmt.Printf("Key: %s, Value: %T\n", key, val)
-
+		if key[0] != schema {
+			continue
+		}
 		for _, v := range val {
 			col := Column{v.Name(), v.ScanType().Name(), v.DatabaseTypeName()}
 			//fmt.Printf("%s\n", PostgresColTypeToSteampipeColType(nil, col).String())
@@ -62,7 +64,12 @@ func GetViewsForDBSchema(ctx context.Context, connectionString, schema string) (
 		return nil, fmt.Errorf("can't connect to DB: %w", err)
 	}
 
-	views, err := GetViews(conn)
+	//_, err = conn.Exec(fmt.Sprintf(`set search_path="%s"`, schema))
+	//if err != nil {
+	//	return nil, fmt.Errorf("error setting schema: %w", err)
+	//}
+
+	views, err := GetViews(conn, schema)
 	if err != nil {
 		return nil, fmt.Errorf("error inspecting schema: %w", err)
 	}
@@ -94,13 +101,13 @@ func PostgresColTypeToSteampipeColType(ctx context.Context, col Column) proto.Co
 	var x proto.ColumnType
 	fmt.Printf("colDbType: %s\n", col.colDbType)
 	switch col.colDbType {
-	case "TEXT", "BYTEA":
+	case "TEXT", "_TEXT", "UUID":
 		x = proto.ColumnType_STRING
 	case "BOOL", "BOOLEAN":
 		x = proto.ColumnType_BOOL
 	case "DOUBLE PRECISION", "FLOAT8", "FLOAT4", "NUMERIC", "DECIMAL", "CURRENCY":
 		x = proto.ColumnType_DOUBLE
-	case "INT4", "INTEGER":
+	case "INT4", "INT8", "INTEGER":
 		x = proto.ColumnType_INT
 	case "JSON", "JSONB":
 		x = proto.ColumnType_JSON

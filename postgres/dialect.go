@@ -12,15 +12,15 @@ type dialect interface {
 	PrimaryKey(db *sql.DB, schema, name string) ([]string, error)
 	TableNames(db *sql.DB) ([][2]string, error)
 	ViewNames(db *sql.DB) ([][2]string, error)
+	ViewNamesSchema(db *sql.DB, schema string) ([][2]string, error)
 }
 
 // driverDialect is a registry, mapping database/sql driver names to database dialects.
 // This is somewhat fragile.
 var driverDialect = map[string]dialect{
-	"*pq.Driver":                   postgresDialect{}, // github.com/lib/pq
-	"*stdlib.Driver":               postgresDialect{}, // github.com/jackc/pgx
-	"*pgsqldriver.postgresDriver":  postgresDialect{}, // github.com/jbarham/gopgsqldriver
-	"*gosnowflake.SnowflakeDriver": postgresDialect{}, // github.com/snowflakedb/gosnowflake
+	"*pq.Driver":                  postgresDialect{}, // github.com/lib/pq
+	"*stdlib.Driver":              postgresDialect{}, // github.com/jackc/pgx
+	"*pgsqldriver.postgresDriver": postgresDialect{}, // github.com/jbarham/gopgsqldriver
 }
 
 // TODO Should we expose a method of registering a driver string/dialect in our registry?

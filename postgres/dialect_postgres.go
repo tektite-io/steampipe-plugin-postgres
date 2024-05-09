@@ -22,6 +22,20 @@ const postgresTableNamesWithSchema = `
 		table_name
 `
 
+const postgresViewNamesWithoutSchema = `
+	SELECT
+		table_schema,
+		table_name
+	FROM
+		information_schema.tables
+	WHERE
+		table_type = 'VIEW' AND
+		table_schema NOT IN ('pg_catalog', 'information_schema')
+	ORDER BY
+		table_schema,
+		table_name
+`
+
 const postgresViewNamesWithSchema = `
 	SELECT
 		table_schema,
@@ -31,6 +45,7 @@ const postgresViewNamesWithSchema = `
 	WHERE
 		table_type = 'VIEW' AND
 		table_schema NOT IN ('pg_catalog', 'information_schema')
+		AND table_schema = $1
 	ORDER BY
 		table_schema,
 		table_name
@@ -95,5 +110,9 @@ func (postgresDialect) TableNames(db *sql.DB) ([][2]string, error) {
 }
 
 func (postgresDialect) ViewNames(db *sql.DB) ([][2]string, error) {
+	return fetchObjectNames(db, postgresViewNamesWithoutSchema)
+}
+
+func (postgresDialect) ViewNamesSchema(db *sql.DB, schema string) ([][2]string, error) {
 	return fetchObjectNames(db, postgresViewNamesWithSchema)
 }
