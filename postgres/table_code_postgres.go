@@ -25,14 +25,21 @@ func tablePostgres(ctx context.Context, connection *plugin.Connection) (*plugin.
 }
 
 func getMapKey(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+
 	asMap, ok := d.HydrateItem.(map[string]any)
+
 	if !ok {
 		plugin.Logger(ctx).Error("postgres.hydrate.getMapKey", "err", "invalid type", "expected", "map[string]any", "actual", fmt.Sprintf("%T", d.HydrateItem))
 		return nil, fmt.Errorf("can't convert hydrate item %v to map", d.HydrateItem)
 	}
 
 	key := d.Param.(string)
-	return asMap[key], nil
+
+	plugin.Logger(ctx).Debug("postgres.getMapKey", "key", key)
+	plugin.Logger(ctx).Debug("postgres.getMapKey", "asMap[key]", asMap[key])
+
+	v := detectAndProcessJSON(ctx, asMap[key])
+	return v, nil
 }
 
 func makeColumns(ctx context.Context, view View) []*plugin.Column {
@@ -44,6 +51,7 @@ func makeColumns(ctx context.Context, view View) []*plugin.Column {
 			plugin.Logger(ctx).Warn("postgres.makeColumns", "msg", "unknown type, skipping column!", "column", col.name, "type", col.colScanType)
 			continue
 		}
+
 		columns = append(columns, &plugin.Column{
 			Name:        col.name,
 			Type:        postgresType,

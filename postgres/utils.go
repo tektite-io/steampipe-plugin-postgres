@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -183,6 +184,96 @@ func MakeSQLQuery(ctx context.Context, connectionString, schema string, table st
 	}
 
 	return MakeRawSQLQuery(ctx, connectionString, schema, table, query)
+}
+
+func isJSONString(s string) bool {
+	var js string
+	return json.Unmarshal([]byte(s), &js) == nil
+
+}
+
+func isJSON(s string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
+
+}
+
+func IsNotNil(input any) bool {
+	if input == nil {
+		return false
+	}
+
+	// Type switch to handle different types of input
+	switch v := input.(type) {
+	case *int, *string, *float64, *bool:
+		// Check if the pointer is not nil
+		return v != nil
+	case []byte, string, int, float64, bool:
+		// Basic types can't be nil, so just return true
+		return true
+	case map[string]interface{}, []interface{}:
+		// Check if maps or slices are nil
+		return v != nil
+	default:
+		// For all other types, use reflection to check for nil pointers
+		return true
+	}
+}
+
+func detectAndProcessJSON(ctx context.Context, input any) any {
+	switch v := input.(type) {
+	case []byte:
+		if IsNotNil(v) && isValidJSON(v) {
+			plugin.Logger(ctx).Debug("The byte array is valid JSON.")
+			return printUnmarshaledJSON(ctx, v)
+		} else {
+			plugin.Logger(ctx).Debug("The byte array is not valid JSON.")
+			return input
+		}
+	}
+	return input
+}
+
+func isValidJSON(data []byte) bool {
+	var jsonData interface{}
+	return json.Unmarshal(data, &jsonData) == nil
+}
+
+// UnmarshalJSON unmarshals the input byte slice into a generic interface{}.
+func UnmarshalJSON(data []byte) (interface{}, error) {
+	var jsonData interface{}
+	err := json.Unmarshal(data, &jsonData)
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
+}
+
+// JSONString takes a generic interface{} and returns it as a JSON string.
+func JSONString(data interface{}) (string, error) {
+	plainJSON, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(plainJSON), nil
+}
+
+func printUnmarshaledJSON(ctx context.Context, data []byte) string {
+
+	jsonData, err := UnmarshalJSON(data)
+	if err != nil {
+		plugin.Logger(ctx).Error("Error unmarshaling JSON:", err)
+		return ""
+	}
+
+	// Get the JSON string
+	jsonString, err := JSONString(jsonData)
+	if err != nil {
+		plugin.Logger(ctx).Error("Error getting JSON string:", err)
+		return ""
+	}
+
+	return jsonString
 }
 
 /*
