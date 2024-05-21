@@ -1,4 +1,4 @@
-module github.com/jreyesr/steampipe-plugin-postgres
+module github.com/tektite-io/steampipe-plugin-postgres
 
 go 1.21
 

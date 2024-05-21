@@ -9,8 +9,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
-func tablePostgres(ctx context.Context, connection *plugin.Connection) (*plugin.Table, error) {
-	view := ctx.Value(keyTable).(View)
+func tablePostgres(ctx context.Context) (*plugin.Table, error) {
+	view := ctx.Value(keyView).(View)
 	name := view.Name
 
 	return &plugin.Table{
@@ -35,15 +35,14 @@ func getMapKey(ctx context.Context, d *transform.TransformData) (interface{}, er
 
 	key := d.Param.(string)
 
-	plugin.Logger(ctx).Debug("postgres.getMapKey", "key", key)
-	plugin.Logger(ctx).Debug("postgres.getMapKey", "asMap[key]", asMap[key])
-
 	v := detectAndProcessJSON(ctx, asMap[key])
 	return v, nil
 }
 
 func makeColumns(ctx context.Context, view View) []*plugin.Column {
 	columns := make([]*plugin.Column, 0, len(view.Columns))
+
+	plugin.Logger(ctx).Debug("View", view)
 
 	for _, col := range view.Columns {
 		postgresType := PostgresColTypeToSteampipeColType(ctx, col)
@@ -60,6 +59,7 @@ func makeColumns(ctx context.Context, view View) []*plugin.Column {
 		})
 	}
 
+	plugin.Logger(ctx).Info("makeColumns.done", "val", columns)
 	return columns
 }
 

@@ -29,25 +29,21 @@ func connect(connectionString string) (*sql.DB, error) {
 }
 
 func GetViews(db *sql.DB, schema string) ([]View, error) {
-	//conn, err := connect(connectionString)
-	//if err != nil {
-	//	return nil, fmt.Errorf("can't connect to DB: %w", err)
-	//}
 	var views []View
 	var cols []Column
 
 	viewsList, err := Views(db)
-
+	views = make([]View, 0)
 	for key, val := range viewsList {
 		//fmt.Printf("Key: %s, Value: %T\n", key, val)
+
 		if key[0] != schema {
 			continue
 		}
+		cols = make([]Column, 0)
 		for _, v := range val {
 			col := Column{v.Name(), v.ScanType().Name(), v.DatabaseTypeName()}
-			//fmt.Printf("%s\n", PostgresColTypeToSteampipeColType(nil, col).String())
 			cols = append(cols, col)
-			//fmt.Printf("k: %d, Name: %s, Type: %s, DataBase Type Name: %s\n", k, v.Name(), v.ScanType(), v.DatabaseTypeName())
 		}
 		view := View{key, cols}
 		views = append(views, view)
@@ -64,11 +60,6 @@ func GetViewsForDBSchema(ctx context.Context, connectionString, schema string) (
 	if err != nil {
 		return nil, fmt.Errorf("can't connect to DB: %w", err)
 	}
-
-	//_, err = conn.Exec(fmt.Sprintf(`set search_path="%s"`, schema))
-	//if err != nil {
-	//	return nil, fmt.Errorf("error setting schema: %w", err)
-	//}
 
 	views, err := GetViews(conn, schema)
 	if err != nil {
@@ -100,7 +91,6 @@ For example, DECIMAL, FLOAT and CURRENCY become DOUBLEs on Steampipe
 */
 func PostgresColTypeToSteampipeColType(ctx context.Context, col Column) proto.ColumnType {
 	var x proto.ColumnType
-	fmt.Printf("colDbType: %s\n", col.colDbType)
 	switch col.colDbType {
 	case "TEXT", "_TEXT", "UUID":
 		x = proto.ColumnType_STRING

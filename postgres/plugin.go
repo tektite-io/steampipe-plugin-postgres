@@ -26,7 +26,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 type key string
 
 const (
-	keyTable key = "table"
+	keyView key = "view"
 )
 
 func PluginTables(ctx context.Context, d *plugin.TableMapData) (map[string]*plugin.Table, error) {
@@ -62,9 +62,9 @@ func PluginTables(ctx context.Context, d *plugin.TableMapData) (map[string]*plug
 			temp_table_names = append(temp_table_names, view.Name[1])
 
 			// Pass the actual View as a context key, as the CSV plugin does
-			tableCtx := context.WithValue(ctx, keyTable, view)
+			tableCtx := context.WithValue(ctx, keyView, view)
 
-			tableSteampipe, err := tablePostgres(tableCtx, d.Connection)
+			tableSteampipe, err := tablePostgres(tableCtx)
 			if err != nil {
 				plugin.Logger(ctx).Error("postgres.PluginTables", "create_table_error", err, "tableName", view.Name)
 				return nil, err

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jreyesr/steampipe-plugin-postgres/postgres"
+	"github.com/tektite-io/steampipe-plugin-postgres/postgres"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
